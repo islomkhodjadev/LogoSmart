@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Django API Documentation</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding: 20px; }
+        .api-section { margin-bottom: 40px; }
+        .api-call { background: #f9f9f9; padding: 20px; margin-top: 10px; border-left: 5px solid #007bff; }
+        pre { background: #333; color: #fff; padding: 10px; }
+        .api-call h5 { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center my-4">Django API Documentation</h1>
+
+        <section id="introduction" class="api-section">
+            <h2>Introduction</h2>
+            <p>This documentation provides comprehensive details about each API endpoint in the Django project, including methods for managing users, authentication, parent and child data, levels, video lessons, and cities. The API is designed to support a robust back-end system for client applications, facilitating a range of actions from user registration to complex data manipulation.</p>
+        </section>
+
+        <section id="authentication" class="api-section">
+            <h2>Authentication</h2>
+            <p>All requests to secure endpoints require authentication. This system uses token-based authentication. Below is the method to obtain a token after a user has been registered and activated.</p>
+            <div class="api-call">
+                <h4>Obtaining an Authentication Token</h4>
+                <p>This endpoint allows users to obtain an authentication token by providing their username and password. The token must be included in the Authorization header of subsequent requests to access protected endpoints.</p>
+                <p>Method: POST</p>
+                <p>URL: <code>/v1/api/parent/authenticate/</code></p>
+                <p>Request Body:</p>
+                <pre>{
+  "username": "user",
+  "password": "password"
+}</pre>
+                <h5>Sample Request:</h5>
+                <code>curl -X POST http://example.com/v1/api/parent/authenticate/ -H "Content-Type: application/json" -d '{"username": "user", "password": "password"}'</code>
+                <h5>Expected Response:</h5>
+                <pre>{
+  "user_id": 1,
+  "token": "generated_token",
+  "username": "user"
+}</pre>
+            </div>
+        </section>
+
+        <section id="user-management" class="api-section">
+            <h2>User Management</h2>
+            <div class="api-call">
+                <h4>Register User by Phone</h4>
+                <p>This endpoint allows users to register using their phone number. If it's the first time registering, the user should include "first": "true" in the request body. An OTP (One-Time Password) will be sent to the provided phone number for verification.</p>
+                <p>Method: POST</p>
+                <p>URL: <code>/v1/api/parent/registerbyphone/</code></p>
+                <p>Request Body:</p>
+                <pre>{
+  "first": "true",
+  "phoneNumber": "+999901234567"
+}</pre>
+                <h5>Sample Request:</h5>
+                <code>curl -X POST http://example.com/v1/api/parent/registerbyphone/ -H "Content-Type: application/json" -d '{"first": "true", "phoneNumber": "+999901234567"}'</code>
+                <h5>Expected Response:</h5>
+                <pre>{
+  "phoneNumber": "+999901234567",
+  "username": "+999901234567",
+  "password": "generated_password"
+}</pre>
+            </div>
+            <div class="api-call">
+                <h4>Activate User by Phone</h4>
+                <p>This endpoint allows users to activate their account by providing the OTP sent to their phone number. The phone number must be included in the URL.</p>
+                <p>Method: POST</p>
+                <p>URL: <code>/v1/api/parent/registerbyphone/&lt;phoneNumber&gt;/</code></p>
+                <p>Request Body:</p>
+                <pre>{
+  "code": "123456"
+}</pre>
+                <h5>Sample Request:</h5>
+                <code>curl -X POST http://example.com/v1/api/parent/registerbyphone/+999901234567/ -H "Content-Type: application/json" -d '{"code": "123456"}'</code>
+                <h5>Expected Response:</h5>
+                <pre>{
+  "result": "user +999901234567 activated"
+}</pre>
+            </div>
+            <div class="api-call">
+                <h4>Complete Registration</h4>
+                <p>This endpoint allows users to complete their registration by providing a username and password after activating their phone number.</p>
+                <p>Method: POST</p>
+                <p>URL: <code>/v1/api/parent/registerbyphone/</code></p>
+                <p>Request Body:</p>
+                <pre>{
+  "phoneNumber": "+999901234567",
+  "username": "newusername",
+  "password": "newpassword"
+}</pre>
+                <h5>Sample Request:</h5>
+                <code>curl -X POST http://example.com/v1/api/parent/registerbyphone/ -H "Content-Type: application/json" -d '{"phoneNumber": "+999901234567", "username": "newusername", "password": "newpassword"}'</code>
+                <h5>Expected Response:</h5>
+                <pre>{
+  "phoneNumber": "+999901234567",
+  "username": "newusername",
+  "password": "newpassword"
+}</pre>
+            </div>
+            <div class="api-call">
+                <h4>Resend Activation Code</h4>
+                <p>This endpoint allows users to resend the activation OTP to their phone number. The phone number must be included in the URL.</p>
+                <p>Method: GET</p>
+                <p>URL: <code>/v1/api/parent/registerbyphone/&lt;phoneNumber&gt;/</code></p>
+                <h5>Sample Request:</h5>
+                <code>curl -X GET http://example.com/v1/api/parent/registerbyphone/+999901234567/</code>
+                <h5>Expected Response:</h5>
+                <pre>{
+  "result": "code sent"
+}</pre>
+            </div>
+            <div class="api-call">
+                <h4>Change Phone Number</h4>
+                <p>This endpoint allows authenticated users to change their phone number. The OTP verification will be sent to the new phone number. To complete the change, the user must send a POST request with the code.</p>
+                <p>Method: POST</p>
+                <p>URL: <code>/v1/api/parent/changephonenumber/</code></p>
+                <p>Request Body:</p>
+                <pre>{
+  "phoneNumber": "+999901234568"
+}</pre>
+                <h5>Sample Request to send OTP:</h5>
+                <code>curl -X POST http://example.com/v1/api/parent/changephonenumber/ -H "Authorization: Token generated_token" -d '{"phoneNumber": "+999901234568"}'</code>
+                <p>Request Body to verify OTP:</p>
+                <pre>{
+  "code": "654321"
+}</pre>
+                <h5>Sample Request to verify OTP:</h5>
+                <code>curl -X POST http://example.com/v1/api/parent/changephonenumber/ -H "Authorization: Token generated_token" -d '{"code": "654321"}'</code>
+                <h5>Expected Response:</h5>
+                <pre>{
+  "user_id": 1,
+  "phoneNumber": "+999901234568"
+}</pre>
+            </div>
+            <div class="api-call">
+                <h4>Change User Credentials</h4>
+                <p>This endpoint allows authenticated users to change their username and password.</p>
+                <p>Method: PATCH</p>
+                <p>URL: <code>/v1/api/parent/changecredentials/</code></p>
+                <p>Request Body:</p>
+                <pre>{
+  "username": "newuser",
+  "password": "newpassword"
+}</pre>
+                <h5>Sample Request:</h5>
+                <code>curl -X PATCH http://example.com/v1/api/parent/changecredentials/ -H "Authorization: Token generated_token" -d '{"username": "newuser", "password": "newpassword"}'</code>
+                <h5>Expected Response:</h5>
+                <pre>{
+  "user_id": 1,
+  "username": "newuser"
+}</pre>
+            </div>
+        </section>
+
+        <section id="parent-management" class="api-section">
+            <h2>Parent Management</h2>
+            <div class="api-call">
+                <h4>Create Parent</h4>
+                <p>This endpoint allows authenticated users to create a parent profile.</p>
+                <p>Method: POST</p>
+                <p>URL: <code>/v1/api/parent/createparent/</code></p>
+                <p>Request Body:</p>
+                <pre>{
+  "name": "John Doe",
+  "city": "Tashkent",
+  "region": "Tashkent Region",
+  "age": 40
+}</pre>
+                <h5>Sample Request:</h5>
+                <code>curl -X POST http://example.com/v1/api/parent/createparent/ -H "Authorization: Token generated_token" -d '{"name": "John Doe", "city": "Tashkent", "region": "Tashkent Region", "age": 40}'</code>
+                <h5>Expected Response:</h5>
+                <pre>{
+  "id": 1,
+  "name": "John Doe",
+  "city": "Tashkent",
+  "region": "Tashkent Region",
+  "age": 40,
+  "user": 1
+}</pre>
+            </div>
+            <div class="api-call">
+                <h4>Retrieve Parent</h4>
+                <p>This endpoint allows authenticated users to retrieve their parent profile.</p>
+                <p>Method: GET</p>
+                <p>URL: <code>/v1/api/parent/createparent/</code></p>
+                <h5>Sample Request:</h5>
+                <code>curl -X GET http://example.com/v1/api/parent/createparent/ -H "Authorization: Token generated_token"</code>
+                <h5>Expected Response:</h5>
+                <pre>{
+  "id": 1,
+  "name": "John Doe",
+  "city": "Tashkent",
+  "region": "Tashkent Region",
+  "age": 40,
+  "user": 1
+}</pre>
+            </div>
+            <div class="api-call">
+                <h4>Update Parent</h4>
+                <p>This endpoint allows authenticated users to update their parent profile.</p>
+                <p>Method: PUT</p>
+                <p>URL: <code>/v1/api/parent/createparent/</code></p>
+                <p>Request Body:</p>
+                <pre>{
+  "name": "John Doe Updated",
+  "city": "Tashkent",
+  "region": "Tashkent Region",
+  "age": 41
+}</pre>
+                <h5>Sample Request:</h5>
+                <code>curl -X PUT http://example.com/v1/api/parent/createparent/ -H "Authorization: Token generated_token" -d '{"name": "John Doe Updated", "city": "Tashkent", "region": "Tashkent Region", "age": 41}'</code>
+                <h5>Expected Response:</h5>
+                <pre>{
+  "id": 1,
+  "name": "John Doe Updated",
+  "city": "Tashkent",
+  "region": "Tashkent Region",
+  "age": 41,
+  "user": 1
+}</pre>
+            </div>
+            <div class="api-call">
+                <h4>Partial Update Parent</h4>
+                <p>This endpoint allows authenticated users to partially update their parent profile.</p>
+                <p>Method: PATCH</p>
+                <p>URL: <code>/v1/api/parent/createparent/</code></p>
+                <p>Request Body:</p>
+                <pre>{
+  "age": 42
+}</pre>
+                <h5>Sample Request:</h5>
+                <code>curl -X PATCH http://example.com/v1/api/parent/createparent/ -H "Authorization: Token generated_token" -d '{"age": 42}'</code>
+                <h5>Expected Response:</h5>
+                <pre>{
+  "id": 1,
+  "name": "John Doe",
+  "city": "Tashkent",
+  "region": "Tashkent Region",
+  "age": 42,
+  "user": 1
+}</pre>
+            </div>
+        </section>
+
+        <section id="child-management" class="api-section">
+            <h2>Child Management</h2>
+            <div class="api-call">
+                <h4>Create Child</h4>
+                <p>This endpoint allows authenticated users to create a child profile.</p>
+                <p>Method: POST</p>
+                <p>URL: <code>/v1/api/parent/children/</code></p>
+                <p>Request Body:</p>
+                <pre>{
+  "gender": "M",
+  "name": "Jane Doe",
+  "age": 5,
+  "image": "path/to/image.jpg"
+}</pre>
+                <h5>Sample Request:</h5>
+                <code>curl -X POST http://example.com/v1/api/parent/children/ -H "Authorization: Token generated_token" -d '{"gender": "M", "name": "Jane Doe", "age": 5, "image": "path/to/image.jpg"}'</code>
+                <h5>Expected Response:</h5>
+                <pre>{
+  "id": 2,
+  "gender": "M",
+  "name": "Jane Doe",
+  "age": 5,
+  "image": "url/to/image.jpg",
+  "parent": 1
+}</pre>
+            </div>
+            <div class="api-call">
+                <h4>Retrieve Child</h4>
+                <p>This endpoint allows authenticated users to retrieve a child profile by its ID.</p>
+                <p>Method: GET</p>
+                <p>URL: <code>/v1/api/parent/children/&lt;id&gt;/</code></p>
+                <h5>Sample Request:</h5>
+                <code>curl -X GET http://example.com/v1/api/parent/children/2/ -H "Authorization: Token generated_token"</code>
+                <h5>Expected Response:</h5>
+                <pre>{
+  "id": 2,
+  "gender": "M",
+  "name": "Jane Doe",
+  "age": 5,
+  "image": "url/to/image.jpg",
+  "parent": 1
+}</pre>
+            </div>
+            <div class="api-call">
+                <h4>Update Child</h4>
+                <p>This endpoint allows authenticated users to update a child profile by its ID.</p>
+                <p>Method: PUT</p>
+                <p>URL: <code>/v1/api/parent/children/&lt;id&gt;/</code></p>
+                <p>Request Body:</p>
+                <pre>{
+  "gender": "F",
+  "name": "Jane Doe Updated",
+  "age": 6,
+  "image": "path/to/new_image.jpg"
+}</pre>
+                <h5>Sample Request:</h5>
+                <code>curl -X PUT http://example.com/v1/api/parent/children/2/ -H "Authorization: Token generated_token" -d '{"gender": "F", "name": "Jane Doe Updated", "age": 6, "image": "path/to/new_image.jpg"}'</code>
+                <h5>Expected Response:</h5>
+                <pre>{
+  "id": 2,
+  "gender": "F",
+  "name": "Jane Doe Updated",
+  "age": 6,
+  "image": "url/to/new_image.jpg",
+  "parent": 1
+}</pre>
+            </div>
+            <div class="api-call">
+                <h4>Partial Update Child</h4>
+                <p>This endpoint allows authenticated users to partially update a child profile by its ID.</p>
+                <p>Method: PATCH</p>
+                <p>URL: <code>/v1/api/parent/children/&lt;id&gt;/</code></p>
+                <p>Request Body:</p>
+                <pre>{
+  "age": 7
+}</pre>
+                <h5>Sample Request:</h5>
+                <code>curl -X PATCH http://example.com/v1/api/parent/children/2/ -H "Authorization: Token generated_token" -d '{"age": 7}'</code>
+                <h5>Expected Response:</h5>
+                <pre>{
+  "id": 2,
+  "gender": "F",
+  "name": "Jane Doe Updated",
+  "age": 7,
+  "image": "url/to/new_image.jpg",
+  "parent": 1
+}</pre>
+            </div>
+        </section>
+
+        <section id="level-management" class="api-section">
+            <h2>Level Management</h2>
+            <div class="api-call">
+                <h4>Retrieve Levels</h4>
+                <p>This endpoint allows authenticated users to retrieve all levels.</p>
+                <p>Method: GET</p>
+                <p>URL: <code>/v1/api/parent/levels/</code></p>
+                <h5>Sample Request:</h5>
+                <code>curl -X GET http://example.com/v1/api/parent/levels/ -H "Authorization: Token generated_token"</code>
+                <h5>Expected Response:</h5>
+                <pre>[
+  {
+    "id": 1,
+    "name": "Beginner",
+    "age_min": 5,
+    "age_max": 10,
+    "level": [
+      {
+        "id": 1,
+        "text": "Level 1",
+        "voice": "url/to/voice.mp3",
+        "images": []
+      }
+    ]
+  },
+  ...
+]</pre>
+            </div>
+            <div class="api-call">
+                <h4>Create Child Level</h4>
+                <p>This endpoint allows authenticated users to create a new level for a child.</p>
+                <p>Method: POST</p>
+                <p>URL: <code>/v1/api/parent/children/level/</code></p>
+                <p>Request Body:</p>
+                <pre>{
+  "child": 2,
+  "level": 1,
+  "stars": 3,
+  "complete": true
+}</pre>
+                <h5>Sample Request:</h5>
+                <code>curl -X POST http://example.com/v1/api/parent/children/level/ -H "Authorization: Token generated_token" -d '{"child": 2, "level": 1, "stars": 3, "complete": true}'</code>
+                <h5>Expected Response:</h5>
+                <pre>{
+  "id": 1,
+  "child": 2,
+  "level": 1,
+  "stars": 3,
+  "complete": true,
+  "created_at": "2023-01-01T00:00:00Z"
+}</pre>
+            </div>
+            <div class="api-call">
+                <h4>Partial Update Child Level</h4>
+                <p>This endpoint allows authenticated users to partially update a child's level by its ID.</p>
+                <p>Method: PATCH</p>
+                <p>URL: <code>/v1/api/parent/children/level/&lt;id&gt;/</code></p>
+                <p>Request Body:</p>
+                <pre>{
+  "stars": 2
+}</pre>
+                <h5>Sample Request:</h5>
+                <code>curl -X PATCH http://example.com/v1/api/parent/children/level/1/ -H "Authorization: Token generated_token" -d '{"stars": 2}'</code>
+                <h5>Expected Response:</h5>
+                <pre>{
+  "id": 1,
+  "child": 2,
+  "level": 1,
+  "stars": 2,
+  "complete": true,
+  "created_at": "2023-01-01T00:00:00Z"
+}</pre>
+            </div>
+        </section>
+
+        <section id="video-lessons" class="api-section">
+            <h2>Video Lessons</h2>
+            <div class="api-call">
+                <h4>Retrieve Video Lessons</h4>
+                <p>This endpoint allows authenticated users to retrieve all video lessons.</p>
+                <p>Method: GET</p>
+                <p>URL: <code>/v1/api/parent/videolesson/</code></p>
+                <h5>Sample Request:</h5>
+                <code>curl -X GET http://example.com/v1/api/parent/videolesson/ -H "Authorization: Token generated_token"</code>
+                <h5>Expected Response:</h5>
+                <pre>[
+  {
+    "id": 1,
+    "video_url": "http://example.com/video1",
+    "description": "Description of video 1",
+    "title": "Video 1"
+  },
+  ...
+]</pre>
+            </div>
+        </section>
+
+        <section id="cities" class="api-section">
+            <h2>Manage Cities and Regions</h2>
+            <div class="api-call">
+                <h4>List Cities with Regions</h4>
+                <p>This endpoint allows authenticated users to retrieve all cities with their corresponding regions.</p>
+                <p>Method: GET</p>
+                <p>URL: <code>/v1/api/parent/cities/</code></p>
+                <h5>Sample Request:</h5>
+                <code>curl -X GET http://example.com/v1/api/parent/cities/ -H "Authorization: Token generated_token"</code>
+                <h5>Expected Response:</h5>
+                <pre>[
+  {
+    "id": 1,
+    "name": "Tashkent",
+    "regions": [
+      {
+        "id": 1,
+        "name": "Tashkent Region"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Samarkand",
+    "regions": [
+      {
+        "id": 2,
+        "name": "Samarkand Region"
+      }
+    ]
+  }
+]</pre>
+            </div>
+        </section>
+
+        <footer class="text-center mt-5">
+            <p>© 2024 Django Project API. All rights reserved.</p>
+        </footer>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
