@@ -22,6 +22,6 @@ def get_auth_token(email, password):
         )
 
 
-email = "dilbarmatkasimova@gmail.com"
-password = "FTSvLtpofq5kjTSlonVAv7nKOEc5bI4ctSyd4iPO"
+email = ""
+password = ""
 token = get_auth_token(email, password)

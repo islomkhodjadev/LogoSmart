@@ -40,7 +40,7 @@ class OTP:
     def verify(instance: get_user_model(), code: int):
 
         actual_code = cache.get(instance.username, default=None)
-        
+
         if actual_code is not None:
             if int(actual_code) == int(code):
                 instance.is_active = True
